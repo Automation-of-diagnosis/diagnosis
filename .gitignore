@@ -1,0 +1,6 @@
+venv_diagnosis
+my_app.log
+tests.py
+utils.py
+.idea
+__pycache__
