@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, Union
 
 from flask import request
 
@@ -13,7 +14,7 @@ def check_data_on_validation():
         raise Exception("Invalid request")
 
 
-def func1_create_session():
+def func1_create_session() -> Dict[Union[str, None], str]:
     try:
         logger.debug("Session started")
         check_data_on_validation()
@@ -25,7 +26,7 @@ def func1_create_session():
         logger.debug("Session finished")
 
 
-def func2_get_data_from_user():
+def func2_get_data_from_user() -> Dict[Union[str, None], str]:
     try:
         logger.debug("Get data started")
         check_data_on_validation()
@@ -39,7 +40,7 @@ def func2_get_data_from_user():
         logger.debug("Get data finished")
 
 
-def update_data_in_db():
+def update_data_in_db() -> Dict[Union[str, None], str]:
     try:
         logger.debug("Update db started")
         check_data_on_validation()
