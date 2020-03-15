@@ -1,8 +1,9 @@
 import logging
+from typing import Dict, List, Union
 
-DB_NAME = "my_app.db"
+DB_NAME: str = "my_app.db"
 
-LOGGING = {
+LOGGING: Dict[str, Union[int, str, Dict[str, List]]] = {
     'version': 1,
 
     'formatters': {

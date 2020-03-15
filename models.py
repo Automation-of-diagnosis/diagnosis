@@ -1,3 +1,5 @@
+from typing import Dict
+
 from peewee import (Model, SqliteDatabase, DoubleField, CharField, IntegerField, DateTimeField,
                     datetime as pw_datetime)
 
@@ -15,7 +17,7 @@ class App_class(Model):
     data_from_user3 = CharField()
     created = DateTimeField(default=pw_datetime.datetime.now())
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         return self._data
 
 
