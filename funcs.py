@@ -14,7 +14,7 @@ def check_data_on_validation():
         raise Exception("Invalid request")
 
 
-def func1_create_session() -> Dict[Union[str, None], str]:
+def create_session() -> Dict[str, Union[str, None]]:
     try:
         logger.debug("Session started")
         check_data_on_validation()
@@ -26,7 +26,7 @@ def func1_create_session() -> Dict[Union[str, None], str]:
         logger.debug("Session finished")
 
 
-def func2_get_data_from_user() -> Dict[Union[str, None], str]:
+def get_data_from_user() -> Dict[str, Union[str, None]]:
     try:
         logger.debug("Get data started")
         check_data_on_validation()
@@ -40,7 +40,7 @@ def func2_get_data_from_user() -> Dict[Union[str, None], str]:
         logger.debug("Get data finished")
 
 
-def update_data_in_db() -> Dict[Union[str, None], str]:
+def update_data_in_db() -> Dict[str, Union[str, None]]:
     try:
         logger.debug("Update db started")
         check_data_on_validation()
