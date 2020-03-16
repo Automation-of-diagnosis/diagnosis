@@ -7,6 +7,70 @@ from models import App_class
 
 logger = logging.getLogger('my_app')
 
+SOFA_down: Dict[str, str] = {'platelets': '150 100 50 20',
+                        'PaO2/FiO2': '400 300 200 100',
+                        'gsc': '14 12 9 6',
+                             }
+
+SOFA_up: Dict[str, str] = {'creatinine': '110 171 300 440',
+                           'bilirubin': '20 33 102 204',
+                           }
+
+user_data: Dict[str, str] = {'srAD': '4',
+                        'creatinine': '150',
+                        'bilirubin': '16',
+                             'platelets': '25',
+                             'PaO2/FiO2': '150',
+                             'gsc': '3',
+                             }
+
+
+def sofa_down(measure: int, scale: str) -> int:
+    list_scale = scale.split()
+    if measure < int(list_scale[3]):
+        return 4
+    elif measure < int(list_scale[2]):
+        return 3
+    elif measure < int(list_scale[1]):
+        return 2
+    elif measure < int(list_scale[0]):
+        return 1
+    else:
+        return 0
+
+
+def sofa_up(measure: int, scale: str) -> int:
+    list_scale = scale.split()
+    if measure < int(list_scale[0]):
+        return 0
+    elif measure < int(list_scale[1]):
+        return 1
+    elif measure < int(list_scale[2]):
+        return 2
+    elif measure < int(list_scale[3]):
+        return 3
+    else:
+        return 4
+
+
+def sofa(user_data: Dict[str, str]) -> Union[int, str]:
+    n = 0
+    for measurement in user_data:
+        try:
+            user_data[measurement] = int(user_data[measurement])
+        except TypeError:
+            return 'Вводимые значения должны быть числа'
+        if measurement == 'srAD':
+            if user_data[measurement] > 70:
+                n += 1
+        if measurement in SOFA_down:
+            assesment = sofa_down(user_data[measurement], SOFA_down[measurement])
+            n += assesment
+        else:
+            assesment = sofa_up(user_data[measurement], SOFA_up[measurement])
+            n += assesment
+    return n
+
 
 # Уточнить как можно получить проверку данных
 def check_data_on_validation():
