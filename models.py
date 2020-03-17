@@ -8,10 +8,28 @@ from config import DB_NAME
 my_app_db = SqliteDatabase(DB_NAME)
 
 
-class App_class(Model):
+class Base_model(Model):
     class Meta:
-        db = my_app_db
+        database = my_app_db
 
+
+class Request_user(Base_model):
+    full_name = CharField()
+    age = IntegerField()
+    number = IntegerField()
+    created = DateTimeField(default=pw_datetime.datetime.now())
+    srAD = CharField()
+    creatinine = IntegerField()
+    bilirubin = IntegerField()
+    platelets = IntegerField()
+    pao2_fio2 = IntegerField()
+    gsc = IntegerField()
+    eye_reaction = CharField()
+    motor_reaction = CharField()
+    speech = CharField()
+
+
+class App_class(Base_model):
     data_from_user1 = IntegerField()
     data_from_user2 = DoubleField()
     data_from_user3 = CharField()
@@ -21,4 +39,5 @@ class App_class(Model):
         return self._data
 
 
-App_class.create_table(True)
+# App_class.create_table(True)
+Request_user.create_table(True)
