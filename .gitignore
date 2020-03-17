@@ -1,5 +1,6 @@
 venv_diagnosis
 my_app.log
+my_app.db
 tests.py
 utils.py
 .idea
