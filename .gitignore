@@ -6,3 +6,4 @@ utils.py
 .idea
 __pycache__
 tigra
+templates
