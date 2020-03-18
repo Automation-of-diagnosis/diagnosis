@@ -1,7 +1,10 @@
-from typing import Dict, Union
-
 from my_app import app
 import funcs
+
+
+@app.route("/", methods=["POST"])
+def index():
+    return funcs.index()
 
 
 # запуск функции при открытии страницы create
