@@ -8,7 +8,7 @@ LOGGING: Dict[str, Union[int, str, Dict[str, List]]] = {
 
     'formatters': {
         'default': {
-            'format': '[%(actime)s] [%(levelname)s] - %(name)s: %(message)s',
+            'format': '[%(asctime)s] [%(levelname)s] - %(name)s: %(message)s',
             },
     },
 
