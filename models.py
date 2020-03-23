@@ -24,9 +24,9 @@ class RequestUser(BaseModel):
     platelets = IntegerField()
     pao2_fio2 = IntegerField()
     gsc = IntegerField()
-    eye_reaction = CharField()
-    motor_reaction = CharField()
-    speech = CharField()
+    # eye_reaction = CharField()
+    # motor_reaction = CharField()
+    # speech = CharField()
 
 
 class AppClass(BaseModel):
