@@ -7,3 +7,5 @@ utils.py
 __pycache__
 tigra
 templates
+utils
+config.py

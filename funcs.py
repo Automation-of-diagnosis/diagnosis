@@ -1,7 +1,7 @@
 import logging
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
-from flask import request, render_template
+from flask import request, render_template, flash, redirect, url_for
 
 from forms import LoginForm
 from models import AppClass
@@ -10,13 +10,11 @@ logger = logging.getLogger('my_app')
 
 
 def index():
-    try:
+    form = LoginForm()
+    title = 'Оценка тяжести состояния пациента'
+    scale = 'Введите показатели:'
+    return render_template('index.html', page_title=title, scale=scale, form=form)
 
-        title = 'Оценка тяжести состояния пациента'
-        scale = 'Введите показатели:'
-        return render_template('index.html', page_title=title, scale=scale)
-    except (IndexError, TypeError):
-        return False
 
 SOFA_down: Dict[str, str] = {'platelets': '150 100 50 20',
                         'PaO2/FiO2': '400 300 200 100',
@@ -38,6 +36,7 @@ user_data: Dict[str, str] = {'srAD': '4',
 
 def sofa_down(measure: int, scale: str) -> int:
     list_scale = scale.split()
+
     if measure < int(list_scale[3]):
         return 4
     elif measure < int(list_scale[2]):
@@ -89,7 +88,7 @@ def check_data_on_validation():
         raise Exception("Invalid request")
 
 
-def create_session() -> Dict[str, Union[str, None]]:
+def create_session() -> Dict[str, Optional[str]]:
     try:
         logger.debug("Session started")
         check_data_on_validation()
@@ -101,7 +100,7 @@ def create_session() -> Dict[str, Union[str, None]]:
         logger.debug("Session finished")
 
 
-def get_data_from_user() -> Dict[str, Union[str, None]]:
+def get_data_from_user() -> Dict[str, Optional[str]]:
     try:
         logger.debug("Get data started")
         check_data_on_validation()

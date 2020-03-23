@@ -2,7 +2,7 @@ from my_app import app
 import funcs
 
 
-@app.route("/", methods=["POST"])
+@app.route("/", methods=["GET", "POST"])
 def index():
     return funcs.index()
 
