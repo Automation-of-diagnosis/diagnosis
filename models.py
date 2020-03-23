@@ -8,12 +8,12 @@ from config import DB_NAME
 my_app_db = SqliteDatabase(DB_NAME)
 
 
-class Base_model(Model):
+class BaseModel(Model):
     class Meta:
         database = my_app_db
 
 
-class Request_user(Base_model):
+class RequestUser(BaseModel):
     full_name = CharField()
     age = IntegerField()
     number = IntegerField()
@@ -29,7 +29,7 @@ class Request_user(Base_model):
     speech = CharField()
 
 
-class App_class(Base_model):
+class AppClass(BaseModel):
     data_from_user1 = IntegerField()
     data_from_user2 = DoubleField()
     data_from_user3 = CharField()
@@ -40,4 +40,4 @@ class App_class(Base_model):
 
 
 # App_class.create_table(True)
-Request_user.create_table(True)
+RequestUser.create_table(True)

@@ -1,11 +1,20 @@
 import logging
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
-from flask import request
+from flask import request, render_template, flash, redirect, url_for
 
-from models import App_class
+from forms import LoginForm
+from models import AppClass
 
 logger = logging.getLogger('my_app')
+
+
+def index():
+    form = LoginForm()
+    title = 'Оценка тяжести состояния пациента'
+    scale = 'Введите показатели:'
+    return render_template('index.html', page_title=title, scale=scale, form=form)
+
 
 SOFA_down: Dict[str, str] = {'platelets': '150 100 50 20',
                         'PaO2/FiO2': '400 300 200 100',
@@ -27,6 +36,7 @@ user_data: Dict[str, str] = {'srAD': '4',
 
 def sofa_down(measure: int, scale: str) -> int:
     list_scale = scale.split()
+
     if measure < int(list_scale[3]):
         return 4
     elif measure < int(list_scale[2]):
@@ -78,7 +88,7 @@ def check_data_on_validation():
         raise Exception("Invalid request")
 
 
-def create_session() -> Dict[str, Union[str, None]]:
+def create_session() -> Dict[str, Optional[str]]:
     try:
         logger.debug("Session started")
         check_data_on_validation()
@@ -90,12 +100,12 @@ def create_session() -> Dict[str, Union[str, None]]:
         logger.debug("Session finished")
 
 
-def get_data_from_user() -> Dict[str, Union[str, None]]:
+def get_data_from_user() -> Dict[str, Optional[str]]:
     try:
         logger.debug("Get data started")
         check_data_on_validation()
         # TODO and filter
-        data_user = App_class.select()
+        data_user = AppClass.select()
         return {"data": [p.to_dict() for p in data_user], "error": "Ok"}
     except Exception as ex:
         logger.warning(ex)
@@ -109,7 +119,7 @@ def update_data_in_db() -> Dict[str, Union[str, None]]:
         logger.debug("Update db started")
         check_data_on_validation()
         # TODO and check form params
-        data_user_in_db = App_class.create(**request.form)
+        data_user_in_db = AppClass.create(**request.form)
         return {"data": data_user_in_db.to_dict(), "error": "Ok"}
     except Exception as ex:
         logger.warning(ex)
