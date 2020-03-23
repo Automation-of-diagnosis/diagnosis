@@ -4,15 +4,28 @@ from typing import Dict, Union, Optional
 from flask import request, render_template, flash, redirect, url_for
 
 from forms import LoginForm
-from models import AppClass
+from models import AppClass, RequestUser
 
 logger = logging.getLogger('my_app')
 
 
 def index():
     form = LoginForm()
+    form.srad.data = '0' # выбор поля по умолчанию
     title = 'Оценка тяжести состояния пациента'
     scale = 'Введите показатели:'
+    if form.validate_on_submit():
+        ful_name = form.ful_name.data
+        age = form.age.data
+        number = form.number.data
+        srad = form.srad.data
+        creatinine = form.creatinine.data
+        platelets = form.platelets.data
+        bilirubin = form.bilirubin.data
+        pao2_fio2 = form.pao2_fio2.data
+        gsc = form.gsc.data
+        flash(f"gsc")
+
     return render_template('index.html', page_title=title, scale=scale, form=form)
 
 
