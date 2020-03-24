@@ -11,10 +11,12 @@ logger = logging.getLogger('my_app')
 
 def index():
     form = LoginForm()
-    form.srad.data = '0' # выбор поля по умолчанию
+    # form.srad.data = '0' # выбор поля по умолчанию
     title = 'Оценка тяжести состояния пациента'
     scale = 'Введите показатели:'
-    if form.validate_on_submit():
+    # gsc = request.form['gsc'] #другой способ для доступа к элементу данных полученных от пользователя
+    # print(gsc)
+    if form.validate_on_submit(): # если все поля формы были заполнены то выполнить
         ful_name = form.ful_name.data
         age = form.age.data
         number = form.number.data
@@ -24,27 +26,28 @@ def index():
         bilirubin = form.bilirubin.data
         pao2_fio2 = form.pao2_fio2.data
         gsc = form.gsc.data
-        flash(f"gsc")
-
+        user_data = {
+            'srad': srad,
+            'creatinine': creatinine,
+            'platelets': platelets,
+            'bilirubin': bilirubin,
+            'pao2_fio2': pao2_fio2,
+            'gsc': gsc,
+        }
+        print(user_data)
+        print(sofa(user_data))
+        # return flash("Выполняется подсчёт")
     return render_template('index.html', page_title=title, scale=scale, form=form)
 
 
 SOFA_down: Dict[str, str] = {'platelets': '150 100 50 20',
-                        'PaO2/FiO2': '400 300 200 100',
+                        'pao2_fio2': '400 300 200 100',
                         'gsc': '14 12 9 6',
                              }
 
 SOFA_up: Dict[str, str] = {'creatinine': '110 171 300 440',
                            'bilirubin': '20 33 102 204',
                            }
-
-user_data: Dict[str, str] = {'srAD': '4',
-                        'creatinine': '150',
-                        'bilirubin': '16',
-                             'platelets': '25',
-                             'PaO2/FiO2': '150',
-                             'gsc': '3',
-                             }
 
 
 def sofa_down(measure: int, scale: str) -> int:
@@ -83,59 +86,12 @@ def sofa(user_data: Dict[str, str]) -> Union[int, str]:
             user_data[measurement] = int(user_data[measurement])
         except TypeError:
             return 'Вводимые значения должны быть числа'
-        if measurement == 'srAD':
-            if user_data[measurement] > 70:
-                n += 1
-        if measurement in SOFA_down:
+        if measurement == 'srad':
+            n += user_data[measurement]
+        elif measurement in SOFA_down:
             assesment = sofa_down(user_data[measurement], SOFA_down[measurement])
             n += assesment
-        else:
+        elif measurement in SOFA_up:
             assesment = sofa_up(user_data[measurement], SOFA_up[measurement])
             n += assesment
     return n
-
-
-# Уточнить как можно получить проверку данных
-def check_data_on_validation():
-    if "user_data" not in request.headers:
-        raise Exception("Invalid request")
-
-
-def create_session() -> Dict[str, Optional[str]]:
-    try:
-        logger.debug("Session started")
-        check_data_on_validation()
-        return {"data": "Result session...", "error": "Ok"}
-    except Exception as ex:
-        logger.warning(ex)
-        return {"data": None, "error": str(ex)}
-    finally:
-        logger.debug("Session finished")
-
-
-def get_data_from_user() -> Dict[str, Optional[str]]:
-    try:
-        logger.debug("Get data started")
-        check_data_on_validation()
-        # TODO and filter
-        data_user = AppClass.select()
-        return {"data": [p.to_dict() for p in data_user], "error": "Ok"}
-    except Exception as ex:
-        logger.warning(ex)
-        return {"data": None, "error": str(ex)}
-    finally:
-        logger.debug("Get data finished")
-
-
-def update_data_in_db() -> Dict[str, Union[str, None]]:
-    try:
-        logger.debug("Update db started")
-        check_data_on_validation()
-        # TODO and check form params
-        data_user_in_db = AppClass.create(**request.form)
-        return {"data": data_user_in_db.to_dict(), "error": "Ok"}
-    except Exception as ex:
-        logger.warning(ex)
-        return {"data": None, "error": str(ex)}
-    finally:
-        logger.debug("Update db finished")
