@@ -3,7 +3,7 @@ from typing import Dict, Union, Optional
 
 from flask import request, render_template, flash, redirect, url_for
 
-from forms import LoginForm
+from forms import LoginForm, choices_srad
 from models import AppClass, RequestUser
 
 logger = logging.getLogger('my_app')
@@ -34,6 +34,17 @@ def index():
             'pao2_fio2': pao2_fio2,
             'gsc': gsc,
         }
+        print(1)
+        row = RequestUser(full_name=ful_name,
+                          age=age,
+                          number=number,
+                          srad=choices_srad[int(srad)],
+                          creatinine=creatinine,
+                          bilirubin=bilirubin,
+                          platelets=platelets,
+                          pao2_fio2=pao2_fio2,
+                          gsc=gsc, )
+        row.save()
         print(user_data)
         print(sofa(user_data))
         # return flash("Выполняется подсчёт")
