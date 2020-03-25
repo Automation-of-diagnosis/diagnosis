@@ -18,7 +18,7 @@ class RequestUser(BaseModel):
     age = IntegerField()
     number = IntegerField()
     created = DateTimeField(default=pw_datetime.datetime.now())
-    srAD = CharField()
+    srad = CharField()
     creatinine = IntegerField()
     bilirubin = IntegerField()
     platelets = IntegerField()
