@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Union, Optional
+from typing import Dict, Union, List, Optional
 
 from flask import request, render_template, flash, redirect, url_for
 
@@ -67,26 +67,24 @@ def index():
     return render_template('index.html', page_title=title, scale=scale, form=form)
 
 
-SOFA_down: Dict[str, str] = {'platelets': [150, 100, 50, 20],
-                        'pao2_fio2': [400, 300, 200, 100],
-                        'gsc': [14, 12, 9, 6],
-                             }
-
-SOFA_up: Dict[str, str] = {'creatinine': [110, 171, 300, 440],
-                           'bilirubin': [20, 33, 102, 204],
-                           }
+SOFA: Dict[str, Dict] = {'platelets': {'scale': [150, 100, 50, 20], 'direction': 'down'},
+                        'pao2_fio2': {'scale': [400, 300, 200, 100], 'direction': 'down'},
+                        'gsc': {'scale': [14, 12, 9, 6], 'direction': 'down'},
+                        'creatinine': {'scale': [110, 171, 300, 440], 'direction': 'up'},
+                        'bilirubin': {'scale': [20, 33, 102, 204], 'direction': 'up'},
+                        }
 
 
 def sofa_direction(measure: int, scale: list, direction: str) -> int:
     if direction == "up":
         scale = list(scale[::-1])
-    for value in enumerate(scale):
-        if measure > value[1]:
-            return 0 + value[0]
+    for sofa_points, measure_border in enumerate(scale):
+        if measure > measure_border:
+            return 0 + sofa_points
     return 4
 
 
-def sofa(user_data: Dict[str, str]) -> Union[int, str]:
+def sofa(user_data: Dict[str, int]) -> Union[int, str]:
     n = 0
     for measurement in user_data:
         try:
@@ -95,10 +93,7 @@ def sofa(user_data: Dict[str, str]) -> Union[int, str]:
             return 'Вводимые значения должны быть числа'
         if measurement == 'srad':
             n += user_data[measurement]
-        elif measurement in SOFA_down:
-            assesment = sofa_direction(user_data[measurement], SOFA_down[measurement], "down")
-            n += assesment
-        elif measurement in SOFA_up:
-            assesment = sofa_direction(user_data[measurement], SOFA_up[measurement], "up")
+        elif measurement in SOFA:
+            assesment = sofa_direction(user_data[measurement], SOFA[measurement]['scale'], SOFA[measurement]['direction'])
             n += assesment
     return n
