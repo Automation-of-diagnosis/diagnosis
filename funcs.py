@@ -1,9 +1,10 @@
 import logging
+import peewee
 from typing import Dict, Union
 
-from flask import request, render_template, flash, redirect, url_for
+from flask import flash, redirect, render_template, request, url_for
 
-from forms import LoginForm, choices_srad
+from forms import LoginForm, choices_srad, ChoiceForm
 from models import RequestUser
 
 logger = logging.getLogger('my_app')
@@ -16,6 +17,14 @@ BORDER_ANSWER = {2: 'Вероятность летального исхода: 0
                  12: 'Вероятность летального исхода: 50,0%',
                  }
 
+RUSSIAN_MEANS = {'srad': 'срАД',
+                 'creatinine': 'Креатинин',
+                 'platelets': 'Тромбоциты',
+                 'bilirubin': 'Билирубин',
+                 'pao2_fio2': 'PaO2/FiO2',
+                 'gsc': 'GSC',
+                 }
+
 
 def result_sofa(points_sofa: int, border: Dict[int, str]) -> str:
     if points_sofa > 11:
@@ -25,16 +34,32 @@ def result_sofa(points_sofa: int, border: Dict[int, str]) -> str:
             return f'Количество баллов {points_sofa}. {border[answer]}'
 
 
+def check_number_list_in_db(number_list: int) -> bool:
+    number_list_in_db = False
+    try:
+        for data in RequestUser.select():
+            if data.number == number_list:
+                flash('Такой больничный лист уже существует')
+                return redirect(url_for('index'))
+    except peewee.DoesNotExist:
+        return number_list_in_db
+
+
+def choice():
+    form = ChoiceForm()
+    return render_template('choice.html', form=form)
+
+
 def index():
     form = LoginForm()
     title = 'Оценка тяжести состояния пациента'
     scale = 'Введите показатели:'
     # gsc = request.form['gsc'] #другой способ для доступа к элементу данных полученных от пользователя
     # print(gsc)
-    if form.validate_on_submit():  # если все поля формы были заполнены то выполнить
+    number = form.number.data
+    if number:
         ful_name = form.ful_name.data
         age = form.age.data
-        number = form.number.data
         srad = form.srad.data
         creatinine = form.creatinine.data
         platelets = form.platelets.data
@@ -49,20 +74,56 @@ def index():
             'pao2_fio2': pao2_fio2,
             'gsc': gsc,
         }
-        row = RequestUser(full_name=ful_name,
-                          age=age,
-                          number=number,
-                          srad=choices_srad[int(srad)],
-                          creatinine=creatinine,
-                          bilirubin=bilirubin,
-                          platelets=platelets,
-                          pao2_fio2=pao2_fio2,
-                          gsc=gsc, )
-        row.save()
-        print(user_data)
-        print(sofa(user_data))
-        flash(result_sofa(sofa(user_data), BORDER_ANSWER))
-        return redirect(url_for('index'))
+        number_list = check_number_list_in_db(number)
+        if not number_list:
+            row = RequestUser(full_name=ful_name,
+                              age=age,
+                              number=number,
+                              srad=choices_srad[int(srad)],
+                              creatinine=creatinine,
+                              bilirubin=bilirubin,
+                              platelets=platelets,
+                              pao2_fio2=pao2_fio2,
+                              gsc=gsc, )
+            row.save()
+            list_add = []
+            for data in user_data:
+                if data == 'srad' and user_data[data] == '0':
+                    list_add.append(RUSSIAN_MEANS[data])
+                if user_data[data] == None:
+                    list_add.append(RUSSIAN_MEANS[data])
+            if len(list_add) > 0:
+                flash('Ваши данные сохранены для расчёта')
+                flash(f'Для больничного листа №{number} необходимо будет добавить следующие данные:')
+                for element in list_add:
+                    flash(f'{element}')
+            else:
+                flash(result_sofa(sofa(user_data), BORDER_ANSWER))
+                # return redirect(url_for('index'))
+        else:
+            data_from_db = {}
+            for data in RequestUser.select():
+                if data.number == number:
+                    data_from_db['srad'] = data.srad
+                    data_from_db['creatinine'] = data.creatinine
+                    data_from_db['bilirubin'] = data.bilirubin
+                    data_from_db['platelets'] = data.platelets
+                    data_from_db['pao2_fio2'] = data.pao2_fio2
+                    data_from_db['gsc'] = data.gsc
+            list_null = []
+            for elem in data_from_db:
+                if data_from_db[elem] == "('0', '')":
+                    list_null.append(elem)
+                if data_from_db[elem] == None:
+                    list_null.append(elem)
+            if len(list_null) == 0:
+                flash('Все данные были заполнены и выполнен расчёт')
+                return redirect(url_for('index'))
+
+            flash('Необходимо дозаполнить следующие данные:')
+            for elem in list_null:
+                flash(f'{RUSSIAN_MEANS[elem]}')
+            return choice()
     return render_template('index.html', page_title=title, scale=scale, form=form)
 
 

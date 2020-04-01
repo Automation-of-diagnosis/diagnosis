@@ -7,6 +7,11 @@ def index():
     return funcs.index()
 
 
+@app.route("/choice", methods=["POST"])
+def choice():
+    return funcs.choice()
+
+
 # запуск функции при открытии страницы create
 @app.route("/create", methods=["POST"])
 def create_session():
