@@ -61,7 +61,8 @@ def index():
         row.save()
         print(user_data)
         print(sofa(user_data))
-        # return flash(result_sofa(sofa(user_data), BORDER_ANSWER))
+        flash(result_sofa(sofa(user_data), BORDER_ANSWER))
+        return redirect(url_for('index'))
     return render_template('index.html', page_title=title, scale=scale, form=form)
 
 
