@@ -97,9 +97,10 @@ def index():
                 flash(f'Для больничного листа №{number} необходимо будет добавить следующие данные:')
                 for element in list_add:
                     flash(f'{element}')
+                return redirect(url_for('index'))
             else:
                 flash(result_sofa(sofa(user_data), BORDER_ANSWER))
-                # return redirect(url_for('index'))
+                return redirect(url_for('index'))
         else:
             data_from_db = {}
             for data in RequestUser.select():
