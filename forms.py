@@ -22,4 +22,9 @@ class LoginForm(FlaskForm):
     pao2_fio2 = IntegerField('PaO2/FiO2 (мм рт.ст.)',  render_kw={"class": "form-control"})
     gsc = IntegerField('GSC', render_kw={"class": "form-control"})
     submit = SubmitField('Отправить', render_kw={"class": "btn btn-primary"})
+
+
+class ChoiceForm(FlaskForm):
+    add = SubmitField('Добавить данные', render_kw={"class": "btn btn-primary"})
+    new = SubmitField('Новый расчёт', render_kw={"class": "btn btn-primary"})
 # validators=[DataRequired()],
