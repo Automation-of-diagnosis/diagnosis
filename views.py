@@ -1,3 +1,4 @@
+from flask import request
 from my_app import app
 import funcs
 
@@ -7,22 +8,15 @@ def index():
     return funcs.index()
 
 
-@app.route("/choice", methods=["POST"])
+@app.route("/choice", methods=["GET", "POST"])
 def choice():
-    return funcs.choice()
+    choice_user = request.form['index']
+    if choice_user == 'New':
+        return funcs.index()
+    else:
+        return funcs.add_data(int(choice_user))
 
 
-# запуск функции при открытии страницы create
-@app.route("/create", methods=["POST"])
-def create_session():
-    return funcs.create_session()
-
-
-@app.route("/get_data", methods=["GET"])
-def get_data_from_user():
-    return funcs.get_data_from_user()
-
-
-@app.route("/update_db", methods=["GET"])
-def update_data_in_db():
-    return funcs.update_data_in_db()
+@app.route("/add_data", methods=["GET", "POST"])
+def add_data():
+    return funcs.update_db()

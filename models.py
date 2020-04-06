@@ -29,6 +29,8 @@ class RequestUser(BaseModel):
     # speech = CharField()
 
 
+
+
 class AppClass(BaseModel):
     data_from_user1 = IntegerField()
     data_from_user2 = DoubleField()

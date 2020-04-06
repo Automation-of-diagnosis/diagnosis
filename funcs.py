@@ -1,10 +1,10 @@
 import logging
 import peewee
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from flask import flash, redirect, render_template, request, url_for
 
-from forms import LoginForm, choices_srad, ChoiceForm
+from forms import LoginForm, choices_srad,  AddDataForm
 from models import RequestUser
 
 logger = logging.getLogger('my_app')
@@ -17,13 +17,32 @@ BORDER_ANSWER = {2: 'Вероятность летального исхода: 0
                  12: 'Вероятность летального исхода: 50,0%',
                  }
 
-RUSSIAN_MEANS = {'srad': 'срАД',
+RUSSIAN_MEANS = {'full_name': "Ф.И.О.",
+                 'age': 'Возраст',
+                 'srad': 'срАД',
                  'creatinine': 'Креатинин',
                  'platelets': 'Тромбоциты',
                  'bilirubin': 'Билирубин',
                  'pao2_fio2': 'PaO2/FiO2',
                  'gsc': 'GSC',
                  }
+
+
+SOFA: Dict[str, Dict] = {'platelets': {'scale': [150, 100, 50, 20], 'direction': 'down'},
+                         'pao2_fio2': {'scale': [400, 300, 200, 100], 'direction': 'down'},
+                         'gsc': {'scale': [14, 12, 9, 6], 'direction': 'down'},
+                         'creatinine': {'scale': [110, 171, 300, 440], 'direction': 'up'},
+                         'bilirubin': {'scale': [20, 33, 102, 204], 'direction': 'up'},
+                         }
+
+CHECK_NULL_DATA_DICT = {'full_name': '',
+                        'age': None,
+                        'srad': 'None',
+                        'creatinine': None,
+                        'platelets': None,
+                        'bilirubin': None,
+                        'pao2_fio2': None,
+                        'gsc': None}
 
 
 def result_sofa(points_sofa: int, border: Dict[int, str]) -> str:
@@ -45,9 +64,67 @@ def check_number_list_in_db(number_list: int) -> bool:
         return number_list_in_db
 
 
-def choice():
-    form = ChoiceForm()
-    return render_template('choice.html', form=form)
+def list_with_null_data(number_list: int) -> List:
+    data_from_db = {}
+    for data in RequestUser.select():
+        if data.number == number_list:
+            data_from_db['full_name'] = data.full_name
+            data_from_db['age'] = data.age
+            data_from_db['srad'] = data.srad
+            data_from_db['creatinine'] = data.creatinine
+            data_from_db['bilirubin'] = data.bilirubin
+            data_from_db['platelets'] = data.platelets
+            data_from_db['pao2_fio2'] = data.pao2_fio2
+            data_from_db['gsc'] = data.gsc
+    list_null = []
+    for elem in data_from_db:
+        if not data_from_db[elem] or data_from_db[elem] == "('0', '')":
+            list_null.append(elem)
+    return list_null
+
+
+def update_db():
+    form = AddDataForm()
+    full_name = form.full_name.data
+    age = form.age.data
+    srad = form.srad.data
+    creatinine = form.creatinine.data
+    platelets = form.platelets.data
+    bilirubin = form.bilirubin.data
+    pao2_fio2 = form.pao2_fio2.data
+    gsc = form.gsc.data
+    user_data_update = {
+        'full_name': full_name,
+        'age': age,
+        'srad': srad,
+        'creatinine': creatinine,
+        'platelets': platelets,
+        'bilirubin': bilirubin,
+        'pao2_fio2': pao2_fio2,
+        'gsc': gsc,
+    }
+    if user_data_update == CHECK_NULL_DATA_DICT:
+        flash('Вы ничего не ввели, начните сначало')
+        return index()
+
+    for data_user in user_data_update:
+        if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
+            if data_user == 'full_name':
+                RequestUser.update(full_name=user_data_update[data_user])
+            if data_user == 'creatinine':
+                RequestUser.update(creatinine=user_data_update[data_user])
+
+    flash('Ваши данные добавлены')
+
+    return index()
+
+
+def add_data(number_list: int):
+    form = AddDataForm()
+    title = 'Оценка тяжести состояния пациента'
+    scale = 'Введите показатели:'
+    adddata = RequestUser.get(RequestUser.number == number_list)
+    return render_template('add_data.html', adddata=adddata, page_title=title, scale=scale, form=form)
 
 
 def index():
@@ -58,7 +135,7 @@ def index():
     # print(gsc)
     number = form.number.data
     if number:
-        ful_name = form.ful_name.data
+        full_name = form.full_name.data
         age = form.age.data
         srad = form.srad.data
         creatinine = form.creatinine.data
@@ -67,6 +144,8 @@ def index():
         pao2_fio2 = form.pao2_fio2.data
         gsc = form.gsc.data
         user_data = {
+            'full_name': full_name,
+            'age': age,
             'srad': srad,
             'creatinine': creatinine,
             'platelets': platelets,
@@ -76,7 +155,7 @@ def index():
         }
         number_list = check_number_list_in_db(number)
         if not number_list:
-            row = RequestUser(full_name=ful_name,
+            row = RequestUser(full_name=full_name,
                               age=age,
                               number=number,
                               srad=choices_srad[int(srad)],
@@ -88,9 +167,7 @@ def index():
             row.save()
             list_add = []
             for data in user_data:
-                if data == 'srad' and user_data[data] == '0':
-                    list_add.append(RUSSIAN_MEANS[data])
-                if user_data[data] == None:
+                if not user_data[data] or (data == 'srad' and user_data[data] == '0'):
                     list_add.append(RUSSIAN_MEANS[data])
             if len(list_add) > 0:
                 flash('Ваши данные сохранены для расчёта')
@@ -102,38 +179,16 @@ def index():
                 flash(result_sofa(sofa(user_data), BORDER_ANSWER))
                 return redirect(url_for('index'))
         else:
-            data_from_db = {}
-            for data in RequestUser.select():
-                if data.number == number:
-                    data_from_db['srad'] = data.srad
-                    data_from_db['creatinine'] = data.creatinine
-                    data_from_db['bilirubin'] = data.bilirubin
-                    data_from_db['platelets'] = data.platelets
-                    data_from_db['pao2_fio2'] = data.pao2_fio2
-                    data_from_db['gsc'] = data.gsc
-            list_null = []
-            for elem in data_from_db:
-                if data_from_db[elem] == "('0', '')":
-                    list_null.append(elem)
-                if data_from_db[elem] == None:
-                    list_null.append(elem)
+            list_null = list_with_null_data(number)
             if len(list_null) == 0:
-                flash('Все данные были заполнены и выполнен расчёт')
+                flash('Все данные были заполнены ранее и выполнен расчёт')
                 return redirect(url_for('index'))
 
             flash('Необходимо дозаполнить следующие данные:')
             for elem in list_null:
                 flash(f'{RUSSIAN_MEANS[elem]}')
-            return choice()
+            return render_template('choice.html', number=number)
     return render_template('index.html', page_title=title, scale=scale, form=form)
-
-
-SOFA: Dict[str, Dict] = {'platelets': {'scale': [150, 100, 50, 20], 'direction': 'down'},
-                         'pao2_fio2': {'scale': [400, 300, 200, 100], 'direction': 'down'},
-                         'gsc': {'scale': [14, 12, 9, 6], 'direction': 'down'},
-                         'creatinine': {'scale': [110, 171, 300, 440], 'direction': 'up'},
-                         'bilirubin': {'scale': [20, 33, 102, 204], 'direction': 'up'},
-                         }
 
 
 def sofa_direction(measure: int, scale: list, direction: str) -> int:
