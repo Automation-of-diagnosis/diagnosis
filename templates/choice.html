@@ -27,9 +27,12 @@
                     {% endif %}
                 {% endwith %}
                 <form action="{{ url_for('choice') }}" method="POST">
-                    {{ form.hidden_tag() }}
-                    {{ form.add }}
-                    {{ form.new }}
+                    <input type="hidden" name="index" value="{{number}}">
+                    <input type="submit" class="btn btn-primary" value="Добавить данные">
+                </form>
+                <form action="{{ url_for('choice') }}" method="POST">
+                    <input type="hidden" name="index" value="New">
+                    <input type="submit" class="btn btn-primary" value="Новый расчёт">
                 </form>
             </div>
             <div class="col-6">

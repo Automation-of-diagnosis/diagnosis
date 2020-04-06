@@ -13,34 +13,25 @@
   <span class="badge badge-danger">SOFA</span>
   <span class="badge badge-primary">GCS</span>
   <body>
-    <div class="container">
+     <div class="container">
        <h1>{{ page_title }}</h1>
         <div class="row">
             <div class="col-6">
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                    <div class="alert alert-warning" role="alert">
-                        {% for message in messages %}
-                            {{ message }} <br>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                {% endwith %}
-                <form action="{{ url_for('index') }}" method="POST">
-                    {{ form.hidden_tag() }}
+              <form action="{{ url_for('add_data') }}" method="POST">
+                  {{ form.hidden_tag() }}
+                  {% if not adddata.full_name %}
                     <div class="form-group">
                         {{ form.full_name.label }}
                         {{ form.full_name() }}
                     </div>
+                  {% if not adddata.age %}
                     <div class="form-group">
                         {{ form.age.label }}
                         {{ form.age() }}
                     </div>
-                    <div class="form-group">
-                        {{ form.number.label }}
-                        {{ form.number() }}
-                    </div>
-                    {% macro render_bootstrap_field(field) %}
+                  {% endif %}
+                  {% endif %}
+                   {% macro render_bootstrap_field(field) %}
                     <div class="form-group {% if field.errors %} error {% endif %}">
                         <label>{{ field.label }}</label>
                             {{ field(class='form-control')|safe }}
@@ -51,37 +42,48 @@
                             {% endif %}
                     </div>
                     {% endmacro %}
+                  {% if adddata.srad == "('0', '')" %}
                     <div class="form-group">
                         {{ render_bootstrap_field(form.srad) }}
                     </div>
+                  {% endif %}
+                  {% if not adddata.creatinine %}
                     <div class="form-group">
                         {{ form.creatinine.label }}
                         {{ form.creatinine() }}
                     </div>
+                  {% endif %}
+                  {% if not adddata.platelets %}
                     <div class="form-group">
                         {{ form.platelets.label }}
                         {{ form.platelets() }}
                     </div>
+                  {% endif %}
+                  {% if not adddata.bilirubin %}
                     <div class="form-group">
                         {{ form.bilirubin.label }}
                         {{ form.bilirubin() }}
                     </div>
+                  {% endif %}
+                  {% if not adddata.pao2_fio2 %}
                     <div class="form-group">
                         {{ form.pao2_fio2.label }}
                         {{ form.pao2_fio2() }}
                     </div>
+                  {% endif %}
+                  {% if not adddata.gsc %}
                     <div class="form-group">
                         {{ form.gsc.label }}
                         {{ form.gsc() }}
                     </div>
-                    {{ form. submit }}
-                </form>
-            </div>
-            <div class="col-6">
-
+                  {% endif %}
+                   {{ form.add }}
+                  <!-- КNOPKA -->
+                 </form>
             </div>
         </div>
-    </div>
+     </div>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
