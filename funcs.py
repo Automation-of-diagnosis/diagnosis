@@ -73,14 +73,12 @@ def list_with_null_data(number_list: int) -> List:
     return list_null
 
 
-# def dict_with_data_from_db(number_list: int) -> List:
-#     data_from_db = dict_db(number_list)
-#     list_with_data = []
-#     for elem in data_from_db:
-#         if elem
-#         if data_from_db[elem] or data_from_db[elem] != "('0', '')":
-#             list_with_data.append(elem)
-#     return list_with_data
+def dict_with_data_from_db(number_list: int) -> List:
+    data_from_db = dict_db(int(number_list))
+    data_from_db['srad'] = data_from_db['srad'][2]
+    del(data_from_db['full_name'])
+    del(data_from_db['age'])
+    return data_from_db
 
 
 def check_and_print_result(check_list: list, number_list: int, user_data: Dict[str, int]):
@@ -121,12 +119,15 @@ def update_db():
         return index()
 
     for data_user in user_data_update:
+        if data_user == 'srad':
+            print(user_data_update[data_user])
+            print(type(user_data_update[data_user]))
         if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
             if data_user == 'full_name':
                 RequestUser.update(full_name=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'age':
                 RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'srad':
+            if data_user == 'srad' and user_data_update[data_user] != 'None':
                 RequestUser.update(srad=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'creatinine':
                 RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
@@ -138,9 +139,12 @@ def update_db():
                 RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'gsc':
                 RequestUser.update(gsc=user_data_update[data_user]).where(RequestUser.number == number).execute()
-    list_db = list_with_null_data(number)
-
     flash('Ваши данные добавлены')
+    list_null = list_with_null_data(int(number))
+    if len(list_null) == 0:
+        flash('Все данные заполнены')
+        # flash('Чтобы узнать результат просто введите ещё раз номер больничного листа в расчёт')
+        flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
     return index()
 
 
@@ -197,7 +201,8 @@ def index():
             list_null = list_with_null_data(number)
             if len(list_null) == 0:
                 flash('Все данные были заполнены ранее и выполнен расчёт')
-                # flash(result_sofa(sofa(user_data), BORDER_ANSWER))
+                flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
+                # dict_with_data_from_db(number)
                 return redirect(url_for('index'))
 
             flash('Необходимо дозаполнить следующие данные:')
@@ -234,6 +239,9 @@ def sofa(user_data: Dict[str, int]) -> Union[int, str]:
 
 def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
     data_from_db = {}
+    print(222)
+    print(number_list)
+    print(type(number_list))
     for data in RequestUser.select():
         if data.number == number_list:
             data_from_db['full_name'] = data.full_name
