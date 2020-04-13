@@ -1,5 +1,5 @@
 from flask import request
-from my_app import app
+from webapp.my_app import app
 import funcs
 
 

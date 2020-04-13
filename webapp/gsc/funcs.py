@@ -4,8 +4,8 @@ from typing import Dict, List, Union
 
 from flask import flash, redirect, render_template, request, url_for
 
-from forms import LoginForm, choices_srad,  AddDataForm
-from models import RequestUser
+from webapp.gsc.forms import LoginForm, choices_srad,  AddDataForm
+from webapp.gsc.models import RequestUser
 
 logger = logging.getLogger('my_app')
 
@@ -58,7 +58,7 @@ def check_number_list_in_db(number_list: int) -> bool:
     try:
         for data in RequestUser.select():
             if data.number == number_list:
-                flash('Такой больничный лист уже существует')
+                flash('Такой номер истории болезни уже существует')
                 return redirect(url_for('index'))
     except peewee.DoesNotExist:
         return number_list_in_db
@@ -84,7 +84,7 @@ def dict_with_data_from_db(number_list: int) -> Dict:
 def check_and_print_result(check_list: list, number_list: int, user_data: Dict[str, int]):
     if len(check_list) > 0:
         flash('Ваши данные сохранены для расчёта')
-        flash(f'Для больничного листа №{number_list} необходимо будет добавить следующие данные:')
+        flash(f'Для истории болезни №{number_list} необходимо будет добавить следующие данные:')
         for element in check_list:
             flash(f'{element}')
         return redirect(url_for('index'))
@@ -125,7 +125,8 @@ def update_db():
             if data_user == 'age':
                 RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'srad' and user_data_update[data_user] != 'None':
-                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).where(RequestUser.number == number).execute()
+                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
             if data_user == 'creatinine':
                 RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'platelets':
@@ -234,6 +235,7 @@ def sofa(user_data: Dict[str, int]) -> Union[int, str]:
     return n
 
 
+# Функция получает данные из базы данных по номеру истории болезни
 def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
     data_from_db = {}
     for data in RequestUser.select():

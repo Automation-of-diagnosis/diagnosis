@@ -1,5 +1,5 @@
 venv_diagnosis
-my_app.log
+webapp/my_app.log
 my_app.db
 tests.py
 utils.py
@@ -7,4 +7,9 @@ utils.py
 __pycache__
 tigra
 utils
-config.py
+webapp/config.py
+create_db.py
+webapp/sofa/
+webapp/templates/gsc/
+webapp/templates/gsc/sofa/
+
