@@ -8,8 +8,6 @@ __pycache__
 tigra
 utils
 webapp/config.py
-create_db.py
 webapp/sofa/
-webapp/templates/gsc/
-webapp/templates/gsc/sofa/
+
 

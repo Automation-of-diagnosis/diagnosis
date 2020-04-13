@@ -17,19 +17,19 @@
        <h1>{{ page_title }}</h1>
         <div class="row">
             <div class="col-6">
-              <form action="{{ url_for('add_data') }}" method="POST">
+              <form action="{{ url_for('gsc.add_data') }}" method="POST">
                   {{ form.hidden_tag() }}
                   {% if not adddata.full_name %}
                     <div class="form-group">
                         {{ form.full_name.label }}
                         {{ form.full_name() }}
                     </div>
+                  {% endif %}
                   {% if not adddata.age %}
                     <div class="form-group">
                         {{ form.age.label }}
                         {{ form.age() }}
                     </div>
-                  {% endif %}
                   {% endif %}
                    {% macro render_bootstrap_field(field) %}
                     <div class="form-group {% if field.errors %} error {% endif %}">

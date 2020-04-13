@@ -98,6 +98,7 @@ def update_db():
     form = AddDataForm()
     full_name = form.full_name.data
     age = form.age.data
+    flash(age)
     srad = form.srad.data
     creatinine = form.creatinine.data
     platelets = form.platelets.data
@@ -143,7 +144,7 @@ def update_db():
         flash('Все данные заполнены')
         # flash('Чтобы узнать результат просто введите ещё раз номер больничного листа в расчёт')
         flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
-        dict_with_data_from_db(number)
+        # dict_with_data_from_db(number)
     return index()
 
 

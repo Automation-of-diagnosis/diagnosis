@@ -1,22 +1,19 @@
-from flask import request
-from webapp.my_app import app
-import funcs
+from flask import Blueprint, request
+
+from webapp.gsc import funcs as funcs_gsc
+
+blueprint = Blueprint('gsc', __name__, url_prefix='/gsc')
 
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    return funcs.index()
-
-
-@app.route("/choice", methods=["GET", "POST"])
+@blueprint.route("/choice", methods=["GET", "POST"])
 def choice():
     choice_user = request.form['index']
     if choice_user == 'New':
-        return funcs.index()
+        return funcs_gsc.index()
     else:
-        return funcs.add_data(int(choice_user))
+        return funcs_gsc.add_data(int(choice_user))
 
 
-@app.route("/add_data", methods=["GET", "POST"])
+@blueprint.route("/add_data", methods=["GET", "POST"])
 def add_data():
-    return funcs.update_db()
+    return funcs_gsc.update_db()
