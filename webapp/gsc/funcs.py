@@ -4,18 +4,27 @@ from typing import Dict, List, Union
 
 from flask import flash, redirect, render_template, request, url_for
 
-from webapp.gsc.forms import LoginForm, choices_srad,  AddDataForm
+from webapp.gsc.forms import LoginForm, choices_srad,  AddDataForm, choices_eye_response, \
+    choices_motor_response, choices_verbal_response
 from webapp.gsc.models import RequestUser
 
 logger = logging.getLogger('my_app')
 
-BORDER_ANSWER = {2: 'Вероятность летального исхода: 0,0%',
-                 4: 'Вероятность летального исхода: 6,4%',
-                 6: 'Вероятность летального исхода: 20,2%',
-                 8: 'Вероятность летального исхода: 21,5%',
-                 10: 'Вероятность летального исхода: 33,3%',
-                 12: 'Вероятность летального исхода: 50,0%',
+GSC_ANSWER = {3: 'смерть мозга терминальная кома',
+                 8: 'кома',
+                 12: 'сопор',
+                 14: 'оглушение',
+                 15: 'ясное сознание',
+              }
+
+BORDER_ANSWER = {2: 'вероятность летального исхода: 0,0%',
+                 4: 'вероятность летального исхода: 6,4%',
+                 6: 'вероятность летального исхода: 20,2%',
+                 8: 'вероятность летального исхода: 21,5%',
+                 10: 'вероятность летального исхода: 33,3%',
+                 12: 'вероятность летального исхода: 50,0%',
                  }
+
 
 RUSSIAN_MEANS = {'full_name': "Ф.И.О.",
                  'age': 'Возраст',
@@ -24,7 +33,9 @@ RUSSIAN_MEANS = {'full_name': "Ф.И.О.",
                  'platelets': 'Тромбоциты',
                  'bilirubin': 'Билирубин',
                  'pao2_fio2': 'PaO2/FiO2',
-                 'gsc': 'GSC',
+                 'eye_response': 'Открывание глаз',
+                 'verbal_response': 'Словесный ответ',
+                 'motor_response': 'Двигательная реакция',
                  }
 
 
@@ -42,15 +53,37 @@ CHECK_NULL_DATA_DICT = {'full_name': '',
                         'platelets': None,
                         'bilirubin': None,
                         'pao2_fio2': None,
-                        'gsc': None}
+                        'eye_response': 'None',
+                        'verbal_response': 'None',
+                        'motor_response': 'None',
+                        }
 
 
-def result_sofa(points_sofa: int, border: Dict[int, str]) -> str:
-    if points_sofa > 11:
-        return f'Количество баллов {points_sofa}. Вероятность летального исхода: 95,2%'
+def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
     for answer in border:
-        if points_sofa < answer:
-            return f'Количество баллов {points_sofa}. {border[answer]}'
+        if points_sofa[1] <= answer:
+            if points_sofa[1] == 3 or points_sofa[1] == 4:
+                word_point = 'балла'
+            else:
+                word_point = 'баллов'
+            return f'GSC - {points_sofa[1]} {word_point} ({border[answer]})'
+
+
+def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
+    n, gsc = points_sofa
+    if gsc < 6:
+        n += 4
+    elif gsc < 10:
+        n += 3
+    elif gsc < 13:
+        n += 2
+    elif gsc < 15:
+        n += 1
+    if n > 11:
+        return f'Sofa - {n} баллов, вероятность летального исхода: 95,2%'
+    for answer in border:
+        if n < answer:
+            return f'Sofa - {n} баллов, {border[answer]}'
 
 
 def check_number_list_in_db(number_list: int) -> bool:
@@ -76,6 +109,9 @@ def list_with_null_data(number_list: int) -> List:
 def dict_with_data_from_db(number_list: int) -> Dict:
     data_from_db = dict_db(int(number_list))
     data_from_db['srad'] = data_from_db['srad'][2]
+    data_from_db['eye_response'] = data_from_db['eye_response'][2]
+    data_from_db['verbal_response'] = data_from_db['verbal_response'][2]
+    data_from_db['motor_response'] = data_from_db['motor_response'][2]
     del(data_from_db['full_name'])
     del(data_from_db['age'])
     return data_from_db
@@ -90,6 +126,7 @@ def check_and_print_result(check_list: list, number_list: int, user_data: Dict[s
         return redirect(url_for('index'))
     else:
         flash(result_sofa(sofa(user_data), BORDER_ANSWER))
+        flash(result_gsc(sofa(user_data), GSC_ANSWER))
         return redirect(url_for('index'))
 
 
@@ -98,13 +135,14 @@ def update_db():
     form = AddDataForm()
     full_name = form.full_name.data
     age = form.age.data
-    flash(age)
     srad = form.srad.data
     creatinine = form.creatinine.data
     platelets = form.platelets.data
     bilirubin = form.bilirubin.data
     pao2_fio2 = form.pao2_fio2.data
-    gsc = form.gsc.data
+    eye_response = form.eye_response.data
+    verbal_response = form.verbal_response.data
+    motor_response = form.motor_response.data
     user_data_update = {
         'full_name': full_name,
         'age': age,
@@ -113,7 +151,9 @@ def update_db():
         'platelets': platelets,
         'bilirubin': bilirubin,
         'pao2_fio2': pao2_fio2,
-        'gsc': gsc,
+        'eye_response': eye_response,
+        'verbal_response': verbal_response,
+        'motor_response': motor_response,
     }
     if user_data_update == CHECK_NULL_DATA_DICT:
         flash('Вы ничего не ввели, начните сначало')
@@ -136,14 +176,22 @@ def update_db():
                 RequestUser.update(bilirubin=user_data_update[data_user]).where(RequestUser.number == number).execute()
             if data_user == 'pao2_fio2':
                 RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'gsc':
-                RequestUser.update(gsc=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'eye_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(eye_response=choices_eye_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'verbal_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(verbal_response=choices_verbal_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'motor_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
     flash('Ваши данные добавлены')
     list_null = list_with_null_data(int(number))
     if len(list_null) == 0:
         flash('Все данные заполнены')
         # flash('Чтобы узнать результат просто введите ещё раз номер больничного листа в расчёт')
         flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
+        flash(result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER))
         # dict_with_data_from_db(number)
     return index()
 
@@ -171,14 +219,18 @@ def index():
         platelets = form.platelets.data
         bilirubin = form.bilirubin.data
         pao2_fio2 = form.pao2_fio2.data
-        gsc = form.gsc.data
+        eye_response = form.eye_response.data
+        verbal_response = form.verbal_response.data
+        motor_response = form.motor_response.data
         user_data = {
             'srad': srad,
             'creatinine': creatinine,
             'platelets': platelets,
             'bilirubin': bilirubin,
             'pao2_fio2': pao2_fio2,
-            'gsc': gsc,
+            'eye_response': eye_response,
+            'verbal_response': verbal_response,
+            'motor_response': motor_response,
         }
         number_list = check_number_list_in_db(number)
         if not number_list:
@@ -190,11 +242,17 @@ def index():
                               bilirubin=bilirubin,
                               platelets=platelets,
                               pao2_fio2=pao2_fio2,
-                              gsc=gsc, )
+                              eye_response=choices_eye_response[int(eye_response)],
+                              verbal_response=choices_verbal_response[int(verbal_response)],
+                              motor_response=choices_motor_response[int(motor_response)],
+                              )
             row.save()
             list_add = []
             for data in user_data:
-                if not user_data[data] or (data == 'srad' and user_data[data] == '0'):
+                if not user_data[data] or (data == 'srad' and user_data[data] == '0')\
+                        or (data == 'eye_response' and user_data[data] == '0')\
+                        or (data == 'verbal_response' and user_data[data] == '0')\
+                        or (data == 'motor_response' and user_data[data] == '0'):
                     list_add.append(RUSSIAN_MEANS[data])
             check_and_print_result(list_add, number, user_data)
         else:
@@ -202,6 +260,7 @@ def index():
             if len(list_null) == 0:
                 flash('Все данные были заполнены ранее и выполнен расчёт')
                 flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
+                flash(result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER))
                 return redirect(url_for('index'))
 
             flash('Необходимо дозаполнить следующие данные:')
@@ -220,20 +279,23 @@ def sofa_direction(measure: int, scale: list, direction: str) -> int:
     return 4
 
 
-def sofa(user_data: Dict[str, int]) -> Union[int, str]:
+def sofa(user_data: Dict[str, int]) -> Union[str, List[int]]:
     n = 0
+    gsc = 0
     for measurement in user_data:
         try:
             user_data[measurement] = int(user_data[measurement])
         except TypeError:
             return 'Вводимые значения должны быть числа'
-        if measurement == 'srad':
+        if measurement == 'eye_response' or measurement == 'verbal_response' or measurement == 'motor_response':
+            gsc += user_data[measurement]
+        elif measurement == 'srad':
             n += user_data[measurement]
         elif measurement in SOFA:
             assesment = sofa_direction(user_data[measurement], SOFA[measurement]['scale'],
                                        SOFA[measurement]['direction'])
             n += assesment
-    return n
+    return [n, gsc]
 
 
 # Функция получает данные из базы данных по номеру истории болезни
@@ -248,5 +310,7 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
             data_from_db['bilirubin'] = data.bilirubin
             data_from_db['platelets'] = data.platelets
             data_from_db['pao2_fio2'] = data.pao2_fio2
-            data_from_db['gsc'] = data.gsc
+            data_from_db['eye_response'] = data.eye_response
+            data_from_db['verbal_response'] = data.verbal_response
+            data_from_db['motor_response'] = data.motor_response
     return data_from_db

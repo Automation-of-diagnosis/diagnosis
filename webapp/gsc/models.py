@@ -13,7 +13,6 @@ class RequestUser(BaseModel):
     bilirubin = IntegerField(null=True)
     platelets = IntegerField(null=True)
     pao2_fio2 = IntegerField(null=True)
-    gsc = IntegerField(null=True)
-
-
-RequestUser.create_table(True)
+    eye_response = CharField(null=True)
+    verbal_response = CharField(null=True)
+    motor_response = CharField(null=True)

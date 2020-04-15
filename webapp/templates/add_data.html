@@ -71,10 +71,52 @@
                         {{ form.pao2_fio2() }}
                     </div>
                   {% endif %}
-                  {% if not adddata.gsc %}
+                  {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                  {% endmacro %}
+                  {% if adddata.eye_response == "('0', '')" %}
                     <div class="form-group">
-                        {{ form.gsc.label }}
-                        {{ form.gsc() }}
+                        {{ render_bootstrap_field(form.eye_response) }}
+                    </div>
+                  {% endif %}
+                  {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                  {% endmacro %}
+                  {% if adddata.verbal_response == "('0', '')" %}
+                    <div class="form-group">
+                        {{ render_bootstrap_field(form.verbal_response) }}
+                    </div>
+                  {% endif %}
+                  {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                  {% endmacro %}
+                  {% if adddata.motor_response == "('0', '')" %}
+                    <div class="form-group">
+                        {{ render_bootstrap_field(form.motor_response) }}
                     </div>
                   {% endif %}
                   <input type="hidden" name="index" value="{{number}}">
