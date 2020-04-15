@@ -70,9 +70,47 @@
                         {{ form.pao2_fio2.label }}
                         {{ form.pao2_fio2() }}
                     </div>
+                    {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                    {% endmacro %}
                     <div class="form-group">
-                        {{ form.gsc.label }}
-                        {{ form.gsc() }}
+                        {{ render_bootstrap_field(form.eye_response) }}
+                    </div>
+                    {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                    {% endmacro %}
+                    <div class="form-group">
+                        {{ render_bootstrap_field(form.verbal_response) }}
+                    </div>
+                    {% macro render_bootstrap_field(field) %}
+                    <div class="form-group {% if field.errors %} error {% endif %}">
+                        <label>{{ field.label }}</label>
+                            {{ field(class='form-control')|safe }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="help-inline">[{{ error }}]</span><br>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                    {% endmacro %}
+                    <div class="form-group">
+                        {{ render_bootstrap_field(form.motor_response) }}
                     </div>
                     {{ form. submit }}
                 </form>
