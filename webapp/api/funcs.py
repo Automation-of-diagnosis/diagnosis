@@ -43,13 +43,6 @@ def api_put(data):
     number_list = check_number_list_in_db(number)
     if not number_list:
         return "Такого больничного листа не существует. Используйте метод 'POST' чтобы создать его"
-    print(data)
-    for indicators in data:
-        if indicators == 'srad':
-            data[indicators] = choices_srad[int(data['srad'])]
-        elif indicators == 'eye_response':
-            data[indicators] = choices_eye_response[int(data['eye_response'])]
-        data[indicators] = data[indicators]
     change_data_in_db(data, number)
     return {'Ваши данные внесены в базу данных': dict_db(int(number))}
 
