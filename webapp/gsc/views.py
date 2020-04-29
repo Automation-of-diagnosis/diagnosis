@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, json
 
 from webapp.gsc import funcs as funcs_gsc
 
@@ -17,3 +17,15 @@ def choice():
 @blueprint.route("/add_data", methods=["GET", "POST"])
 def add_data():
     return funcs_gsc.update_db()
+
+
+# @blueprint.route("/api", methods=["GET", "POST", "PUT"])
+# def api():
+#     if request.method == 'GET':
+#         return funcs_gsc.api_get(request.args.get('bol_list'))
+#     if request.method == 'POST':
+#         data = json.loads(request.data)
+#         return funcs_gsc.api_post(data)
+#     if request.method == 'PUT':
+#         # return funcs_gsc.api_put(request.args.get('bol_list'))
+#         pass
