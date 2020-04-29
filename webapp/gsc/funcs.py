@@ -130,6 +130,35 @@ def check_and_print_result(check_list: list, number_list: int, user_data: Dict[s
         return redirect(url_for('index'))
 
 
+def change_data_in_db(user_data_update, number):
+    for data_user in user_data_update:
+        if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
+            if data_user == 'full_name':
+                RequestUser.update(full_name=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'age':
+                RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'srad' and user_data_update[data_user] != 'None':
+                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'creatinine':
+                RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'platelets':
+                RequestUser.update(platelets=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'bilirubin':
+                RequestUser.update(bilirubin=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'pao2_fio2':
+                RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'eye_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(eye_response=choices_eye_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'verbal_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(verbal_response=choices_verbal_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'motor_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+
+
 def update_db():
     number = request.form['index']
     form = AddDataForm()
@@ -159,32 +188,7 @@ def update_db():
         flash('Вы ничего не ввели, начните сначало')
         return index()
 
-    for data_user in user_data_update:
-        if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
-            if data_user == 'full_name':
-                RequestUser.update(full_name=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'age':
-                RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'srad' and user_data_update[data_user] != 'None':
-                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'creatinine':
-                RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'platelets':
-                RequestUser.update(platelets=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'bilirubin':
-                RequestUser.update(bilirubin=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'pao2_fio2':
-                RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'eye_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(eye_response=choices_eye_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'verbal_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(verbal_response=choices_verbal_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'motor_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
+    change_data_in_db(user_data_update, number)
     flash('Ваши данные добавлены')
     list_null = list_with_null_data(int(number))
     if len(list_null) == 0:
@@ -314,3 +318,57 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
             data_from_db['verbal_response'] = data.verbal_response
             data_from_db['motor_response'] = data.motor_response
     return data_from_db
+
+
+# def api_get(bol_list):
+#     int_bol_list = int(bol_list)
+#     number_list = check_number_list_in_db(int_bol_list)
+#     if not number_list:
+#         return "Такого больничного листа не существует. Используйте метод 'POST' чтобы создать его"
+#     answer = dict_db(int_bol_list)
+#     list_null = list_with_null_data(int_bol_list)
+#     if not list_null:
+#         res_gsi = result_sofa(sofa(dict_with_data_from_db(bol_list)), BORDER_ANSWER)
+#         res_sofa = result_gsc(sofa(dict_with_data_from_db(bol_list)), GSC_ANSWER)
+#         return {'data_from_db': answer, 'result_gsi': res_gsi, 'result_sofa': res_sofa, }
+#     return {'Для расчёта необходимо заполнить': list_null, 'data_from_db': answer}
+#
+#
+# def api_post(data):
+#     number = int(data['number'])
+#     number_list = check_number_list_in_db(number)
+#     if not number_list:
+#         srad = choices_srad[int(data['srad'])]
+#         eye_response = choices_eye_response[int(data['eye_response'])]
+#         verbal_response = choices_verbal_response[int(data['verbal_response'])]
+#         motor_response = choices_motor_response[int(data['motor_response'])]
+#
+#
+#
+#         row = RequestUser(full_name=data['full_name'],
+#                           age=data['age'],
+#                           number=number,
+#                           srad=srad,
+#                           creatinine=data['creatinine'],
+#                           bilirubin=data['bilirubin'],
+#                           platelets=data['platelets'],
+#                           pao2_fio2=data['pao2_fio2'],
+#                           eye_response=eye_response,
+#                           verbal_response=verbal_response,
+#                           motor_response=motor_response,
+#                           )
+#         row.save()
+#         # list_add = []
+#         # for answer in data:
+#         #     if not data[answer] or (answer == 'srad' and data[answer] == '0') \
+#         #             or (answer == 'eye_response' and data[answer] == '0') \
+#         #             or (answer == 'verbal_response' and data[answer] == '0') \
+#         #             or (answer == 'motor_response' and data[answer] == '0')\
+#         #             or data[answer] != 'full_name'\
+#         #             or data[answer] != 'age':
+#         #         print(data[answer])
+#         #         list_add.append(RUSSIAN_MEANS[data[answer]])
+#         #         check_and_print_result(list_add, number, data)
+#         return {'Ваши данные приняты для расчёта': dict_db(int(number))}
+#     return dict_db(int(number))
+
