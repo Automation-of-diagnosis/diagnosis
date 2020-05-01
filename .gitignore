@@ -10,5 +10,5 @@ utils
 webapp/config.py
 webapp/sofa/
 my_app.log
-create_db.py
+
 
