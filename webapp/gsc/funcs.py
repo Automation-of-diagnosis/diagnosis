@@ -71,6 +71,7 @@ def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
 
 
 def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
+    """Function count points and create answer SOFA"""
     n, gsc = points_sofa
     if gsc < 6:
         n += 4
@@ -88,6 +89,7 @@ def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
 
 
 def check_number_list_in_db(number_list: int) -> bool:
+    """Function checks for sick leave in db"""
     number_list_in_db = False
     try:
         for data in RequestUser.select():
@@ -99,6 +101,7 @@ def check_number_list_in_db(number_list: int) -> bool:
 
 
 def list_with_null_data(number_list: int) -> List:
+    """Function checks Null data in db"""
     data_from_db = dict_db(number_list)
     list_null = []
     for elem in data_from_db:
@@ -126,8 +129,13 @@ def check_and_print_result(check_list: list, number_list: int, user_data: Dict[s
             flash(f'{element}')
         return redirect(url_for('index'))
     else:
-        flash(result_sofa(sofa(user_data), BORDER_ANSWER))
-        flash(result_gsc(sofa(user_data), GSC_ANSWER))
+        answer_sofa = result_sofa(sofa(user_data), BORDER_ANSWER)
+        answer_gsc = result_gsc(sofa(user_data), GSC_ANSWER)
+        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number_list).execute()
+        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number_list).execute()
+        flash('Все данные были заполнены, результаты расчёта следующие:')
+        flash(answer_sofa)
+        flash(answer_gsc)
         return redirect(url_for('index'))
 
 
@@ -158,6 +166,21 @@ def change_data_in_db(user_data_update, number):
             if data_user == 'motor_response' and user_data_update[data_user] != 'None':
                 RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
                     where(RequestUser.number == number).execute()
+
+
+def save_result_in_db(number):
+    if not RequestUser.get(RequestUser.number == number).result_sofa:
+        answer_sofa = result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER)
+        answer_gsc = result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER)
+        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number).execute()
+        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number).execute()
+        flash('Результаты расчёта следующие:')
+        flash(answer_sofa)
+        flash(answer_gsc)
+    else:
+        flash('Результаты расчёта следующие:')
+        flash(RequestUser.get(RequestUser.number == number).result_sofa)
+        flash(RequestUser.get(RequestUser.number == number).result_gsc)
 
 
 def update_db():
@@ -194,10 +217,7 @@ def update_db():
     list_null = list_with_null_data(int(number))
     if len(list_null) == 0:
         flash('Все данные заполнены')
-        # flash('Чтобы узнать результат просто введите ещё раз номер больничного листа в расчёт')
-        flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
-        flash(result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER))
-        # dict_with_data_from_db(number)
+        save_result_in_db(number)
     return index()
 
 
@@ -264,8 +284,7 @@ def index():
             list_null = list_with_null_data(number)
             if len(list_null) == 0:
                 flash('Все данные были заполнены ранее и выполнен расчёт')
-                flash(result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER))
-                flash(result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER))
+                save_result_in_db(number)
                 return redirect(url_for('index'))
 
             flash('Необходимо дозаполнить следующие данные:')
@@ -321,55 +340,5 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
     return data_from_db
 
 
-# def api_get(bol_list):
-#     int_bol_list = int(bol_list)
-#     number_list = check_number_list_in_db(int_bol_list)
-#     if not number_list:
-#         return "Такого больничного листа не существует. Используйте метод 'POST' чтобы создать его"
-#     answer = dict_db(int_bol_list)
-#     list_null = list_with_null_data(int_bol_list)
-#     if not list_null:
-#         res_gsi = result_sofa(sofa(dict_with_data_from_db(bol_list)), BORDER_ANSWER)
-#         res_sofa = result_gsc(sofa(dict_with_data_from_db(bol_list)), GSC_ANSWER)
-#         return {'data_from_db': answer, 'result_gsi': res_gsi, 'result_sofa': res_sofa, }
-#     return {'Для расчёта необходимо заполнить': list_null, 'data_from_db': answer}
-#
-#
-# def api_post(data):
-#     number = int(data['number'])
-#     number_list = check_number_list_in_db(number)
-#     if not number_list:
-#         srad = choices_srad[int(data['srad'])]
-#         eye_response = choices_eye_response[int(data['eye_response'])]
-#         verbal_response = choices_verbal_response[int(data['verbal_response'])]
-#         motor_response = choices_motor_response[int(data['motor_response'])]
-#
-#
-#
-#         row = RequestUser(full_name=data['full_name'],
-#                           age=data['age'],
-#                           number=number,
-#                           srad=srad,
-#                           creatinine=data['creatinine'],
-#                           bilirubin=data['bilirubin'],
-#                           platelets=data['platelets'],
-#                           pao2_fio2=data['pao2_fio2'],
-#                           eye_response=eye_response,
-#                           verbal_response=verbal_response,
-#                           motor_response=motor_response,
-#                           )
-#         row.save()
-#         # list_add = []
-#         # for answer in data:
-#         #     if not data[answer] or (answer == 'srad' and data[answer] == '0') \
-#         #             or (answer == 'eye_response' and data[answer] == '0') \
-#         #             or (answer == 'verbal_response' and data[answer] == '0') \
-#         #             or (answer == 'motor_response' and data[answer] == '0')\
-#         #             or data[answer] != 'full_name'\
-#         #             or data[answer] != 'age':
-#         #         print(data[answer])
-#         #         list_add.append(RUSSIAN_MEANS[data[answer]])
-#         #         check_and_print_result(list_add, number, data)
-#         return {'Ваши данные приняты для расчёта': dict_db(int(number))}
-#     return dict_db(int(number))
+
 

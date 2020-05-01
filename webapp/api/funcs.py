@@ -35,7 +35,7 @@ def api_post(data):
                     data[indicators] = None
         save_in_db(data)
         return {'Ваши данные приняты для расчёта': dict_db(int(number))}
-    return f'Больничный лист с номером {number} существует. Для просмотра или измения данных - GET/PUT'
+    return f'Больничный лист с номером {number} существует. Для просмотра/измения данных - GET/PUT'
 
 
 def api_put(data):
@@ -66,4 +66,3 @@ def save_in_db(data):
                       motor_response=motor_response,
                       )
     row.save()
-    return None

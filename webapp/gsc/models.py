@@ -16,3 +16,5 @@ class RequestUser(BaseModel):
     eye_response = CharField(null=True)
     verbal_response = CharField(null=True)
     motor_response = CharField(null=True)
+    result_gsc = CharField(null=True)
+    result_sofa = CharField(null=True)
