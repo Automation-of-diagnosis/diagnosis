@@ -60,6 +60,7 @@ CHECK_NULL_DATA_DICT = {'full_name': '',
 
 
 def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
+    """Function create answer GSC"""
     for answer in border:
         if points_sofa[1] <= answer:
             if points_sofa[1] == 3 or points_sofa[1] == 4:
