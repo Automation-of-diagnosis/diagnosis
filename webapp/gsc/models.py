@@ -1,4 +1,4 @@
-from peewee import (CharField, IntegerField, DateTimeField, datetime as pw_datetime)
+from peewee import CharField, IntegerField, DateTimeField, datetime as pw_datetime
 
 from webapp.model import BaseModel
 
