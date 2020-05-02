@@ -111,6 +111,7 @@ def list_with_null_data(number_list: int) -> List:
 
 
 def dict_with_data_from_db(number_list: int) -> Dict:
+    """Function gets data from db"""
     data_from_db = dict_db(int(number_list))
     data_from_db['srad'] = data_from_db['srad'][2]
     data_from_db['eye_response'] = data_from_db['eye_response'][2]
@@ -122,6 +123,7 @@ def dict_with_data_from_db(number_list: int) -> Dict:
 
 
 def check_and_print_result(check_list: list, number_list: int, user_data: Dict[str, int]):
+    """Function gets and shows fields with Null or print result"""
     if len(check_list) > 0:
         flash('Ваши данные сохранены для расчёта')
         flash(f'Для истории болезни №{number_list} необходимо будет добавить следующие данные:')
@@ -226,7 +228,7 @@ def add_data(number: int):
     title = 'Оценка тяжести состояния пациента'
     scale = 'Введите показатели:'
     adddata = RequestUser.get(RequestUser.number == number)
-    return render_template('add_data.html', adddata=adddata, page_title=title, scale=scale, form=form, number=number)
+    return render_template('gsc/add_data.html', adddata=adddata, page_title=title, scale=scale, form=form, number=number)
 
 
 def index():
@@ -236,6 +238,12 @@ def index():
     # gsc = request.form['gsc'] #другой способ для доступа к элементу данных полученных от пользователя
     # print(gsc)
     number = form.number.data
+    if form.validate_on_submit():
+        pass
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash('Ошибка в заполнении поля "{}": - {}'.format(getattr(form, field).label.text, error))
     if number:
         full_name = form.full_name.data
         age = form.age.data
@@ -290,8 +298,8 @@ def index():
             flash('Необходимо дозаполнить следующие данные:')
             for elem in list_null:
                 flash(f'{RUSSIAN_MEANS[elem]}')
-            return render_template('choice.html', number=number)
-    return render_template('index.html', page_title=title, scale=scale, form=form)
+            return render_template('gsc/choice.html', number=number)
+    return render_template('gsc/index.html', page_title=title, scale=scale, form=form)
 
 
 def sofa_direction(measure: int, scale: list, direction: str) -> int:

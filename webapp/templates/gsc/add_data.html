@@ -1,35 +1,23 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends "base.html" %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
-    <title>{{ page_title }}</title>
-  </head>
-  <span class="badge badge-danger">SOFA</span>
-  <span class="badge badge-primary">GCS</span>
-  <body>
-     <div class="container">
-       <h1>{{ page_title }}</h1>
+{% block content %}
         <div class="row">
             <div class="col-6">
               <form action="{{ url_for('gsc.add_data') }}" method="POST">
                   {{ form.hidden_tag() }}
                   {% if not adddata.full_name %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.full_name.label }}
                         {{ form.full_name() }}
                     </div>
+                  <br>
                   {% endif %}
                   {% if not adddata.age %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.age.label }}
                         {{ form.age() }}
                     </div>
+                  <br>
                   {% endif %}
                    {% macro render_bootstrap_field(field) %}
                     <div class="form-group {% if field.errors %} error {% endif %}">
@@ -43,33 +31,37 @@
                     </div>
                     {% endmacro %}
                   {% if adddata.srad == "('0', '')" %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ render_bootstrap_field(form.srad) }}
                     </div>
                   {% endif %}
                   {% if not adddata.creatinine %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.creatinine.label }}
                         {{ form.creatinine() }}
                     </div>
+                  <br>
                   {% endif %}
                   {% if not adddata.platelets %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.platelets.label }}
                         {{ form.platelets() }}
                     </div>
+                  <br>
                   {% endif %}
                   {% if not adddata.bilirubin %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.bilirubin.label }}
                         {{ form.bilirubin() }}
                     </div>
+                  <br>
                   {% endif %}
                   {% if not adddata.pao2_fio2 %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ form.pao2_fio2.label }}
                         {{ form.pao2_fio2() }}
                     </div>
+                  <br>
                   {% endif %}
                   {% macro render_bootstrap_field(field) %}
                     <div class="form-group {% if field.errors %} error {% endif %}">
@@ -83,7 +75,7 @@
                     </div>
                   {% endmacro %}
                   {% if adddata.eye_response == "('0', '')" %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ render_bootstrap_field(form.eye_response) }}
                     </div>
                   {% endif %}
@@ -99,7 +91,7 @@
                     </div>
                   {% endmacro %}
                   {% if adddata.verbal_response == "('0', '')" %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ render_bootstrap_field(form.verbal_response) }}
                     </div>
                   {% endif %}
@@ -115,22 +107,14 @@
                     </div>
                   {% endmacro %}
                   {% if adddata.motor_response == "('0', '')" %}
-                    <div class="form-group">
+                    <div class="input-group-prepend">
                         {{ render_bootstrap_field(form.motor_response) }}
                     </div>
                   {% endif %}
                   <input type="hidden" name="index" value="{{number}}">
                    {{ form.add }}
-                  <!-- КNOPKA -->
+                  <!-- button -->
                  </form>
             </div>
         </div>
-     </div>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-  </body>
-</html>
+{% endblock %}

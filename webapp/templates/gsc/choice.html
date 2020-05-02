@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-6">
+              {% include('messages.html') %}
+                <form action="{{ url_for('gsc.choice') }}" method="POST">
+                    <input type="hidden" name="index" value="{{number}}">
+                    <input type="submit" class="btn btn-primary" value="Добавить данные">
+                </form>
+                <br>
+                <form action="{{ url_for('gsc.choice') }}" method="POST">
+                    <input type="hidden" name="index" value="New">
+                    <input type="submit" class="btn btn-primary" value="Новый расчёт">
+                </form>
+            </div>
+            <div class="col-6">
+
+            </div>
+        </div>
+{% endblock %}
