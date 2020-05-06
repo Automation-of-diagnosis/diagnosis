@@ -59,191 +59,20 @@ CHECK_NULL_DATA_DICT = {'full_name': '',
                         }
 
 
-def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
-    """Function create answer GSC"""
-    for answer in border:
-        if points_sofa[1] <= answer:
-            if points_sofa[1] == 3 or points_sofa[1] == 4:
-                word_point = 'балла'
-            else:
-                word_point = 'баллов'
-            return f'GSC - {points_sofa[1]} {word_point} ({border[answer]})'
-
-
-def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
-    """Function count points and create answer SOFA"""
-    n, gsc = points_sofa
-    if gsc < 6:
-        n += 4
-    elif gsc < 10:
-        n += 3
-    elif gsc < 13:
-        n += 2
-    elif gsc < 15:
-        n += 1
-    if n > 11:
-        return f'Sofa - {n} баллов, вероятность летального исхода: 95,2%'
-    for answer in border:
-        if n < answer:
-            return f'Sofa - {n} баллов, {border[answer]}'
-
-
-def check_number_list_in_db(number_list: int) -> bool:
-    """Function checks for sick leave in db"""
-    number_list_in_db = False
-    try:
-        for data in RequestUser.select():
-            if data.number == number_list:
-                flash('Такой номер истории болезни уже существует')
-                return redirect(url_for('index'))
-    except peewee.DoesNotExist:
-        return number_list_in_db
-
-
-def list_with_null_data(number_list: int) -> List:
-    """Function checks Null data in db"""
-    data_from_db = dict_db(number_list)
-    list_null = []
-    for elem in data_from_db:
-        if not data_from_db[elem] or data_from_db[elem] == "('0', '')":
-            list_null.append(elem)
-    return list_null
-
-
-def dict_with_data_from_db(number_list: int) -> Dict:
-    """Function gets data from db"""
-    data_from_db = dict_db(int(number_list))
-    data_from_db['srad'] = data_from_db['srad'][2]
-    data_from_db['eye_response'] = data_from_db['eye_response'][2]
-    data_from_db['verbal_response'] = data_from_db['verbal_response'][2]
-    data_from_db['motor_response'] = data_from_db['motor_response'][2]
-    del(data_from_db['full_name'])
-    del(data_from_db['age'])
-    return data_from_db
-
-
-def check_and_print_result(check_list: list, number_list: int, user_data: Dict[str, int]):
-    """Function gets and shows fields with Null or print result"""
-    if len(check_list) > 0:
-        flash('Ваши данные сохранены для расчёта')
-        flash(f'Для истории болезни №{number_list} необходимо будет добавить следующие данные:')
-        for element in check_list:
-            flash(f'{element}')
-        return redirect(url_for('index'))
-    else:
-        answer_sofa = result_sofa(sofa(user_data), BORDER_ANSWER)
-        answer_gsc = result_gsc(sofa(user_data), GSC_ANSWER)
-        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number_list).execute()
-        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number_list).execute()
-        flash('Все данные были заполнены, результаты расчёта следующие:')
-        flash(answer_sofa)
-        flash(answer_gsc)
-        return redirect(url_for('index'))
-
-
-def change_data_in_db(user_data_update, number):
-    for data_user in user_data_update:
-        if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
-            if data_user == 'full_name':
-                RequestUser.update(full_name=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'age':
-                RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'srad' and user_data_update[data_user] != 'None':
-                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'creatinine':
-                RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'platelets':
-                RequestUser.update(platelets=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'bilirubin':
-                RequestUser.update(bilirubin=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'pao2_fio2':
-                RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
-            if data_user == 'eye_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(eye_response=choices_eye_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'verbal_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(verbal_response=choices_verbal_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-            if data_user == 'motor_response' and user_data_update[data_user] != 'None':
-                RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
-                    where(RequestUser.number == number).execute()
-
-
-def save_result_in_db(number):
-    if not RequestUser.get(RequestUser.number == number).result_sofa:
-        answer_sofa = result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER)
-        answer_gsc = result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER)
-        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number).execute()
-        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number).execute()
-        flash('Результаты расчёта следующие:')
-        flash(answer_sofa)
-        flash(answer_gsc)
-    else:
-        flash('Результаты расчёта следующие:')
-        flash(RequestUser.get(RequestUser.number == number).result_sofa)
-        flash(RequestUser.get(RequestUser.number == number).result_gsc)
-
-
-def update_db():
-    number = request.form['index']
-    form = AddDataForm()
-    full_name = form.full_name.data
-    age = form.age.data
-    srad = form.srad.data
-    creatinine = form.creatinine.data
-    platelets = form.platelets.data
-    bilirubin = form.bilirubin.data
-    pao2_fio2 = form.pao2_fio2.data
-    eye_response = form.eye_response.data
-    verbal_response = form.verbal_response.data
-    motor_response = form.motor_response.data
-    user_data_update = {
-        'full_name': full_name,
-        'age': age,
-        'srad': srad,
-        'creatinine': creatinine,
-        'platelets': platelets,
-        'bilirubin': bilirubin,
-        'pao2_fio2': pao2_fio2,
-        'eye_response': eye_response,
-        'verbal_response': verbal_response,
-        'motor_response': motor_response,
-    }
-    if user_data_update == CHECK_NULL_DATA_DICT:
-        flash('Вы ничего не ввели, начните сначало')
-        return index()
-
-    change_data_in_db(user_data_update, number)
-    flash('Ваши данные добавлены')
-    list_null = list_with_null_data(int(number))
-    if len(list_null) == 0:
-        flash('Все данные заполнены')
-        save_result_in_db(number)
-    return index()
-
-
-def add_data(number: int):
-    form = AddDataForm()
-    title = 'Оценка тяжести состояния пациента'
-    scale = 'Введите показатели:'
-    adddata = RequestUser.get(RequestUser.number == number)
-    return render_template('gsc/add_data.html', adddata=adddata, page_title=title, scale=scale, form=form, number=number)
-
-
 def index():
+    """Main function that controls data acquisition and output"""
     form = LoginForm()
     title = 'Оценка тяжести состояния пациента'
     scale = 'Введите показатели:'
     # gsc = request.form['gsc'] #другой способ для доступа к элементу данных полученных от пользователя
     # print(gsc)
     number = form.number.data
-    if form.validate_on_submit():
-        pass
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash('Ошибка в заполнении поля "{}": - {}'.format(getattr(form, field).label.text, error))
+    # if form.validate_on_submit():
+    #     pass
+    # else:
+    #     for field, errors in form.errors.items():
+    #         for error in errors:
+    #             flash('Ошибка в заполнении поля "{}": - {}'.format(getattr(form, field).label.text, error))
     if number:
         full_name = form.full_name.data
         age = form.age.data
@@ -302,7 +131,184 @@ def index():
     return render_template('gsc/index.html', page_title=title, scale=scale, form=form)
 
 
+def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
+    """Function create answer GSC by the number of points"""
+    for answer in border:
+        if points_sofa[1] <= answer:
+            if points_sofa[1] == 3 or points_sofa[1] == 4:
+                word_point = 'балла'
+            else:
+                word_point = 'баллов'
+            return f'GSC - {points_sofa[1]} {word_point} ({border[answer]})'
+
+
+def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
+    """Function  create answer SOFA by the number of points"""
+    n, gsc = points_sofa
+    if gsc < 6:
+        n += 4
+    elif gsc < 10:
+        n += 3
+    elif gsc < 13:
+        n += 2
+    elif gsc < 15:
+        n += 1
+    if n > 11:
+        return f'Sofa - {n} баллов, вероятность летального исхода: 95,2%'
+    for answer in border:
+        if n < answer:
+            return f'Sofa - {n} баллов, {border[answer]}'
+
+
+def check_number_list_in_db(number_list: int) -> bool:
+    """Function checks for sick leave in db"""
+    number_list_in_db = False
+    try:
+        for data in RequestUser.select():
+            if data.number == number_list:
+                flash('Такой номер истории болезни уже существует')
+                return redirect(url_for('index'))
+    except peewee.DoesNotExist:
+        return number_list_in_db
+
+
+def list_with_null_data(number_list: int) -> List:
+    """Function checks Null data in db"""
+    data_from_db = dict_db(number_list)
+    list_null = []
+    for elem in data_from_db:
+        if not data_from_db[elem] or data_from_db[elem] == "('0', '')":
+            list_null.append(elem)
+    return list_null
+
+
+def dict_with_data_from_db(number_list: int) -> Dict:
+    """Function gets data from db"""
+    data_from_db = dict_db(int(number_list))
+    data_from_db['srad'] = data_from_db['srad'][2]
+    data_from_db['eye_response'] = data_from_db['eye_response'][2]
+    data_from_db['verbal_response'] = data_from_db['verbal_response'][2]
+    data_from_db['motor_response'] = data_from_db['motor_response'][2]
+    del(data_from_db['full_name'])
+    del(data_from_db['age'])
+    return data_from_db
+
+
+def check_and_print_result(check_list: list, number_list: int, user_data: Dict[str, int]):
+    """Function gets and shows fields with Null or print result if all fields not Null"""
+    if len(check_list) > 0:
+        flash('Ваши данные сохранены для расчёта')
+        flash(f'Для истории болезни №{number_list} необходимо будет добавить следующие данные:')
+        for element in check_list:
+            flash(f'{element}')
+        return redirect(url_for('index'))
+    else:
+        answer_sofa = result_sofa(sofa(user_data), BORDER_ANSWER)
+        answer_gsc = result_gsc(sofa(user_data), GSC_ANSWER)
+        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number_list).execute()
+        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number_list).execute()
+        flash('Все данные были заполнены, результаты расчёта следующие:')
+        flash(answer_sofa)
+        flash(answer_gsc)
+        return redirect(url_for('index'))
+
+
+def change_data_in_db(user_data_update, number):
+    """Function record data in db when replenish"""
+    for data_user in user_data_update:
+        if user_data_update[data_user] or (data_user == 'srad' and user_data_update[data_user] != 'None'):
+            if data_user == 'full_name':
+                RequestUser.update(full_name=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'age':
+                RequestUser.update(age=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'srad' and user_data_update[data_user] != 'None':
+                RequestUser.update(srad=choices_srad[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'creatinine':
+                RequestUser.update(creatinine=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'platelets':
+                RequestUser.update(platelets=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'bilirubin':
+                RequestUser.update(bilirubin=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'pao2_fio2':
+                RequestUser.update(pao2_fio2=user_data_update[data_user]).where(RequestUser.number == number).execute()
+            if data_user == 'eye_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(eye_response=choices_eye_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'verbal_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(verbal_response=choices_verbal_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+            if data_user == 'motor_response' and user_data_update[data_user] != 'None':
+                RequestUser.update(motor_response=choices_motor_response[int(user_data_update[data_user])]).\
+                    where(RequestUser.number == number).execute()
+
+
+def save_result_in_db(number):
+    """Function save result in db"""
+    if not RequestUser.get(RequestUser.number == number).result_sofa:
+        answer_sofa = result_sofa(sofa(dict_with_data_from_db(number)), BORDER_ANSWER)
+        answer_gsc = result_gsc(sofa(dict_with_data_from_db(number)), GSC_ANSWER)
+        RequestUser.update(result_sofa=answer_sofa).where(RequestUser.number == number).execute()
+        RequestUser.update(result_gsc=answer_gsc).where(RequestUser.number == number).execute()
+        flash('Результаты расчёта следующие:')
+        flash(answer_sofa)
+        flash(answer_gsc)
+    else:
+        flash('Результаты расчёта следующие:')
+        flash(RequestUser.get(RequestUser.number == number).result_sofa)
+        flash(RequestUser.get(RequestUser.number == number).result_gsc)
+
+
+def update_db():
+    """Function save result in db"""
+    number = request.form['index']
+    form = AddDataForm()
+    full_name = form.full_name.data
+    age = form.age.data
+    srad = form.srad.data
+    creatinine = form.creatinine.data
+    platelets = form.platelets.data
+    bilirubin = form.bilirubin.data
+    pao2_fio2 = form.pao2_fio2.data
+    eye_response = form.eye_response.data
+    verbal_response = form.verbal_response.data
+    motor_response = form.motor_response.data
+    user_data_update = {
+        'full_name': full_name,
+        'age': age,
+        'srad': srad,
+        'creatinine': creatinine,
+        'platelets': platelets,
+        'bilirubin': bilirubin,
+        'pao2_fio2': pao2_fio2,
+        'eye_response': eye_response,
+        'verbal_response': verbal_response,
+        'motor_response': motor_response,
+    }
+    if user_data_update == CHECK_NULL_DATA_DICT:
+        flash('Вы ничего не ввели, начните сначало')
+        return index()
+
+    change_data_in_db(user_data_update, number)
+    flash('Ваши данные добавлены')
+    list_null = list_with_null_data(int(number))
+    if len(list_null) == 0:
+        flash('Все данные заполнены')
+        save_result_in_db(number)
+    return index()
+
+
+def add_data(number: int):
+    """Function shows a page with indicators that are not enough to calculate"""
+    form = AddDataForm()
+    title = 'Оценка тяжести состояния пациента'
+    scale = 'Введите показатели:'
+    addata = RequestUser.get(RequestUser.number == number)
+    return render_template('gsc/add_data.html', adddata=addata, page_title=title, scale=scale, form=form, number=number)
+
+
 def sofa_direction(measure: int, scale: list, direction: str) -> int:
+    """Function that counts points for SOFA"""
     if direction == "up":
         scale = list(scale[::-1])
     for sofa_points, measure_border in enumerate(scale):
@@ -312,6 +318,7 @@ def sofa_direction(measure: int, scale: list, direction: str) -> int:
 
 
 def sofa(user_data: Dict[str, int]) -> Union[str, List[int]]:
+    """Function that counts the total points SOFA and in particular GSC"""
     n = 0
     gsc = 0
     for measurement in user_data:
@@ -332,6 +339,7 @@ def sofa(user_data: Dict[str, int]) -> Union[str, List[int]]:
 
 # Функция получает данные из базы данных по номеру истории болезни
 def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
+    """Function take data from db and return dict with data"""
     data_from_db = {}
     for data in RequestUser.select():
         if data.number == number_list:
@@ -346,7 +354,3 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
             data_from_db['verbal_response'] = data.verbal_response
             data_from_db['motor_response'] = data.motor_response
     return data_from_db
-
-
-
-
