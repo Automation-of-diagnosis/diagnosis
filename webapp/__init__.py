@@ -43,6 +43,6 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         # Запрос к базе данных - получение по id объект пользователя
-        return User.get(User.user_id == user_id)
+        return User.get(User.id == user_id)
 
     return app

@@ -31,7 +31,8 @@ def process_login():
             # remember=form.remember_me.data - возвращает True or False в зависимости от галочки в чек-боксе
             login_user(user, remember=form.remember_me.data)
             flash('Вы вошли на сайт')
-            return redirect(url_for(get_redirect_target()))
+            return redirect(url_for('index'))
+            # return redirect(url_for(get_redirect_target()))
 
     flash('Неправильное имя пользователя или пароль')
     return redirect(url_for('user.login'))
@@ -41,7 +42,7 @@ def process_login():
 def logout():
     logout_user()
     flash('Вы успешно разлогинились')
-    return redirect((url_for('news.index')))
+    return redirect((url_for('index')))
 
 
 @blueprint.route('/register')

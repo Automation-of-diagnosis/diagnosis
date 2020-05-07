@@ -2,6 +2,7 @@ from flask import Blueprint, request
 
 from webapp.gsc import funcs as funcs_gsc
 
+
 blueprint = Blueprint('gsc', __name__, url_prefix='/gsc')
 
 
