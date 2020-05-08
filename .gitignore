@@ -2,7 +2,6 @@ venv_diagnosis
 webapp/my_app.log
 my_app.db
 tests.py
-webapp/utils.py
 .idea
 __pycache__
 tigra
