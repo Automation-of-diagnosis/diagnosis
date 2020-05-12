@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template
 
 from webapp.gsc import funcs as funcs_gsc
 

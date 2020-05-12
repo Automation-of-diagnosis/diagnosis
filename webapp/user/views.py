@@ -7,8 +7,17 @@ from flask_login import current_user, login_user, logout_user
 from webapp.user.forms import LoginForm, RegistrationForm
 from webapp.user.models import User
 from webapp.utils import get_redirect_target
+from webapp.gsc.forms import LoginForm as LoginFormGsc
 
 blueprint = Blueprint('user', __name__, url_prefix='/users')
+
+
+@blueprint.route('/index')
+def index():
+    form = LoginFormGsc()
+    title = 'Оценка тяжести состояния пациента'
+    scale = 'Введите показатели:'
+    return render_template('gsc/index.html', page_title=title, scale=scale, form=form)
 
 
 @blueprint.route('/login')
@@ -31,8 +40,8 @@ def process_login():
             # remember=form.remember_me.data - возвращает True or False в зависимости от галочки в чек-боксе
             login_user(user, remember=form.remember_me.data)
             flash('Вы вошли на сайт')
-            return redirect(url_for('index'))
-            # return redirect(url_for(get_redirect_target()))
+            # return redirect(url_for('index'))
+            return redirect(get_redirect_target())
 
     flash('Неправильное имя пользователя или пароль')
     return redirect(url_for('user.login'))

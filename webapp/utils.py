@@ -16,6 +16,6 @@ def get_redirect_target():
     # Проверяет есть ли в запросе параметр 'next'
     for target in request.values.get('next'), request.referrer:
         if not target:
-            redirect(url_for('gsc.index'))
+            return 'index'
         if is_safe_url(target):
             return target
