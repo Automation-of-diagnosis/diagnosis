@@ -1,6 +1,6 @@
 # безопасное использование request.referrer
 from urllib.parse import urlparse, urljoin
-from flask import redirect, request, url_for
+from flask import request
 
 
 def is_safe_url(target):
