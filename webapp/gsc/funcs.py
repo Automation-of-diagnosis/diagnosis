@@ -132,10 +132,27 @@ def index():
 
 
 def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
-    """Function create answer GSC by the number of points"""
+    """Function create answer GSC by the number of points
+    >>> result_gsc([0,5], GSC_ANSWER)
+    'GSC - 5 баллов (кома)'
+    >>> result_gsc([0,2], GSC_ANSWER)
+    'GSC - 2 балла (смерть мозга терминальная кома)'
+    >>> result_gsc([0,1], GSC_ANSWER)
+    'GSC - 1 балл (смерть мозга терминальная кома)'
+    >>> result_gsc([0,4], GSC_ANSWER)
+    'GSC - 4 балла (кома)'
+    >>> result_gsc([0,12], GSC_ANSWER)
+    'GSC - 12 баллов (сопор)'
+    >>> result_gsc([0,17], GSC_ANSWER) is None
+    True
+    >>> result_gsc([0,0], GSC_ANSWER)
+    'GSC - 0 баллов (смерть мозга терминальная кома)'
+    """
     for answer in border:
         if points_sofa[1] <= answer:
-            if points_sofa[1] == 3 or points_sofa[1] == 4:
+            if points_sofa[1] == 1:
+                word_point = 'балл'
+            elif 1 < points_sofa[1] <= 4:
                 word_point = 'балла'
             else:
                 word_point = 'баллов'
@@ -143,7 +160,22 @@ def result_gsc(points_sofa: List[int], border: Dict[int, str]) -> str:
 
 
 def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
-    """Function  create answer SOFA by the number of points"""
+    """Function  create answer SOFA by the number of points
+    >>> result_sofa([4,14], BORDER_ANSWER)
+    'Sofa - 5 баллов, вероятность летального исхода: 20,2%'
+    >>> result_sofa([1,14], BORDER_ANSWER)
+    'Sofa - 2 балла, вероятность летального исхода: 6,4%'
+    >>> result_sofa([0,14], BORDER_ANSWER)
+    'Sofa - 1 балл, вероятность летального исхода: 0,0%'
+    >>> result_sofa([3,14], BORDER_ANSWER)
+    'Sofa - 4 балла, вероятность летального исхода: 20,2%'
+    >>> result_sofa([8,5], BORDER_ANSWER)
+    'Sofa - 12 баллов, вероятность летального исхода: 95,2%'
+    >>> result_sofa([7,5], BORDER_ANSWER)
+    'Sofa - 11 баллов, вероятность летального исхода: 50,0%'
+    >>> result_sofa([12,0], BORDER_ANSWER)
+    'Sofa - 16 баллов, вероятность летального исхода: 95,2%'
+    """
     n, gsc = points_sofa
     if gsc < 6:
         n += 4
@@ -157,7 +189,13 @@ def result_sofa(points_sofa: List[int], border: Dict[int, str]) -> str:
         return f'Sofa - {n} баллов, вероятность летального исхода: 95,2%'
     for answer in border:
         if n < answer:
-            return f'Sofa - {n} баллов, {border[answer]}'
+            if n == 1:
+                word_point = 'балл'
+            elif 1 < n <= 4:
+                word_point = 'балла'
+            else:
+                word_point = 'баллов'
+            return f'Sofa - {n} {word_point}, {border[answer]}'
 
 
 def check_number_list_in_db(number_list: int) -> bool:
@@ -354,3 +392,8 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
             data_from_db['verbal_response'] = data.verbal_response
             data_from_db['motor_response'] = data.motor_response
     return data_from_db
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
