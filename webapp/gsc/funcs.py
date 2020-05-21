@@ -394,6 +394,6 @@ def dict_db(number_list: int) -> Dict[str, Union[str, int]]:
     return data_from_db
 
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+# if __name__ == "__main__":
+#     import doctest
+#     doctest.testmod()
